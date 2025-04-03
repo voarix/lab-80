@@ -27,7 +27,7 @@ locationRouter.get('/:id', async (req, res, next) => {
         const connection = await mysqlDb.getConnection();
         const [result] = await connection.query('SELECT * FROM location WHERE id = ?', [id]);
         const oneLocation = result as Location[];
-        res.send(oneLocation);
+        res.send(oneLocation[0]);
     } catch (e) {
         next(e);
     }

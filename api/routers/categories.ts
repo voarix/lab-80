@@ -27,7 +27,7 @@ categoryRouter.get('/:id', async (req, res, next) => {
         const connection = await mysqlDb.getConnection();
         const [result] = await connection.query('SELECT * FROM categories WHERE id = ?', [id]);
         const oneCategory = result as Category[];
-        res.send(oneCategory);
+        res.send(oneCategory[0]);
     } catch (e) {
         next(e);
     }
