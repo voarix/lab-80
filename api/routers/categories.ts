@@ -1,6 +1,7 @@
 import express from 'express';
 import mysqlDb from "../mysqlDb";
-import {Category} from "../types";
+import {Category, CategoryWithoutId} from "../types";
+import {ResultSetHeader} from "mysql2";
 
 const categoryRouter = express.Router();
 
@@ -28,6 +29,35 @@ categoryRouter.get('/:id', async (req, res, next) => {
         const [result] = await connection.query('SELECT * FROM categories WHERE id = ?', [id]);
         const oneCategory = result as Category[];
         res.send(oneCategory[0]);
+    } catch (e) {
+        next(e);
+    }
+});
+
+categoryRouter.post('/', async (req, res, next) => {
+    if (!req.body.name) {
+        res.status(400).send({error: 'Please enter name'});
+        return;
+    }
+
+    const newCategory: CategoryWithoutId = {
+        name: req.body.name,
+        description: req.body.description ? req.body.description : null,
+    };
+
+    try {
+        const connection = await mysqlDb.getConnection();
+
+        const [result] = await connection.query('INSERT INTO categories (name, description) VALUES (?, ?)',
+            [newCategory.name, newCategory.description]);
+
+
+        const resultHeader = result as ResultSetHeader;
+        const id = resultHeader.insertId;
+
+        const [oneCategory] = await connection.query('SELECT * FROM categories WHERE id = ?', [id]);
+        const category = oneCategory as Category[];
+        res.send(category[0]);
     } catch (e) {
         next(e);
     }
