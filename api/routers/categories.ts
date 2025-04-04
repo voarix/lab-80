@@ -1,8 +1,7 @@
 import express from 'express';
 import mysqlDb from "../mysqlDb";
-import {Category, CategoryWithoutId, Location, LocationWithoutId} from "../types";
+import {Category, CategoryWithoutId} from "../types";
 import {ResultSetHeader} from "mysql2";
-import locationRouter from "./location";
 
 const categoryRouter = express.Router();
 

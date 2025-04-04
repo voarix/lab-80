@@ -81,7 +81,7 @@ itemRouter.delete('/:id', async (req, res, next) => {
     }
 });
 
-itemRouter.put('/:id', imagesUpload.single('image') ,async (req, res, next) => {
+itemRouter.put('/:id', imagesUpload.single('image'), async (req, res, next) => {
     try {
         const id = req.params.id;
         const {name, category_id, location_id} = req.body;
