@@ -70,3 +70,15 @@ itemRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
 });
 
 export default itemRouter;
+
+itemRouter.delete('/:id', async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const connection = await mysqlDb.getConnection();
+        const [oneItem] = await connection.query('DELETE FROM items WHERE id = ?', [id]);
+        const location = oneItem as ItemResponse[];
+        res.send(location[0]);
+    } catch (e) {
+        next(e);
+    }
+});

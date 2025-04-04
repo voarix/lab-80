@@ -62,4 +62,16 @@ locationRouter.post('/', async (req, res, next) => {
     }
 });
 
+locationRouter.delete('/:id', async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const connection = await mysqlDb.getConnection();
+        const [oneLocation] = await connection.query('DELETE FROM location WHERE id = ?', [id]);
+        const location = oneLocation as Location[];
+        res.send(location[0]);
+    } catch (e) {
+        next(e);
+    }
+});
+
 export default locationRouter;

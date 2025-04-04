@@ -63,4 +63,16 @@ categoryRouter.post('/', async (req, res, next) => {
     }
 });
 
+categoryRouter.delete('/:id', async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const connection = await mysqlDb.getConnection();
+        const [oneCategory] = await connection.query('DELETE FROM categories WHERE id = ?', [id]);
+        const category = oneCategory as Category[];
+        res.send(category[0]);
+    } catch (e) {
+        next(e);
+    }
+});
+
 export default categoryRouter;
