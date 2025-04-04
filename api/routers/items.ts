@@ -38,7 +38,7 @@ itemRouter.get('/:id', async (req, res, next) => {
 });
 
 itemRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
-    if (!req.body.name || !req.body.category_id || !req.body.location_id) {
+    if (!req.body.name.trim() || !req.body.category_id || !req.body.location_id) {
         res.status(400).send({error: 'Please enter name/category_id or location_id'});
         return;
     }
@@ -46,8 +46,8 @@ itemRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
     const newItem: ItemWithoutId = {
         category_id: req.body.category_id,
         location_id: req.body.location_id,
-        name: req.body.name,
-        description: req.body.description || null,
+        name: req.body.name.trim(),
+        description: req.body.description.trim() || null,
         image: req.file ? 'images/' + req.file.filename : null
     };
 
@@ -69,8 +69,6 @@ itemRouter.post('/', imagesUpload.single('image'), async (req, res, next) => {
     }
 });
 
-export default itemRouter;
-
 itemRouter.delete('/:id', async (req, res, next) => {
     try {
         const id = req.params.id;
@@ -82,3 +80,38 @@ itemRouter.delete('/:id', async (req, res, next) => {
         next(e);
     }
 });
+
+itemRouter.put('/:id', imagesUpload.single('image') ,async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const {name, category_id, location_id} = req.body;
+
+        if (!name.trim() || !category_id || !location_id) {
+            res.status(400).send({error: 'Please enter name and(or) location_id and(or) category_id'});
+            return;
+        }
+
+        const updatedItem: ItemWithoutId = {
+            category_id: category_id,
+            location_id: location_id,
+            name: name.trim(),
+            description: req.body.description.trim() || null,
+            image: req.file ? 'images/' + req.file.filename : null
+        };
+
+        const connection = await mysqlDb.getConnection();
+        await connection.query('UPDATE items SET category_id = ?, location_id = ?, name = ?, description = ?, image = ? WHERE id = ?', [updatedItem.category_id, updatedItem.location_id, updatedItem.name,
+            updatedItem.description, updatedItem.image, id]);
+
+        const [oneItemResponse] = await connection.query('SELECT * FROM items WHERE id = ?', [id]);
+        const item = oneItemResponse as ItemResponse[];
+        res.send(item[0]);
+    } catch (e) {
+        next(e);
+    }
+});
+
+export default itemRouter;
+
+
+

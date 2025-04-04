@@ -35,14 +35,14 @@ locationRouter.get('/:id', async (req, res, next) => {
 });
 
 locationRouter.post('/', async (req, res, next) => {
-    if (!req.body.name) {
+    if (!req.body.name.trim()) {
         res.status(400).send({error: 'Please enter name'});
         return;
     }
 
     const newLocation: LocationWithoutId = {
-        name: req.body.name,
-        description: req.body.description ? req.body.description : null,
+        name: req.body.name.trim(),
+        description: req.body.description.trim() || null,
     };
 
     try {
@@ -67,6 +67,32 @@ locationRouter.delete('/:id', async (req, res, next) => {
         const id = req.params.id;
         const connection = await mysqlDb.getConnection();
         const [oneLocation] = await connection.query('DELETE FROM location WHERE id = ?', [id]);
+        const location = oneLocation as Location[];
+        res.send(location[0]);
+    } catch (e) {
+        next(e);
+    }
+});
+
+locationRouter.put('/:id', async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const {name, description} = req.body;
+
+        if (!name.trim()) {
+            res.status(400).send({error: 'Please enter name'});
+            return;
+        }
+
+        const updatedLocation: LocationWithoutId = {
+            name: name.trim(),
+            description: description.trim() || null,
+        };
+
+        const connection = await mysqlDb.getConnection();
+        await connection.query('UPDATE location SET name = ?, description = ? WHERE id = ?', [updatedLocation.name, updatedLocation.description, id]);
+
+        const [oneLocation] = await connection.query('SELECT * FROM location WHERE id = ?', [id]);
         const location = oneLocation as Location[];
         res.send(location[0]);
     } catch (e) {
